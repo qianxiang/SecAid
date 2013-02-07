@@ -30,7 +30,7 @@ public class SecAidActivity extends Activity {
 	private String feedback = null;
 	// 运行日志
 	private EditText runLogText = null;
-	// 运行日志
+	// 工作状态
 	private TextView workStatusText = null;
 
 	// 按钮
@@ -45,13 +45,14 @@ public class SecAidActivity extends Activity {
 		setContentView(R.layout.activity_sec_aid);
 
 		fromNoText = (EditText) findViewById(R.id.fromNo);
-		fromNoText.setText("+8615102980");
+		fromNoText.setText("10658379");
+		//fromNoText.setText("+8615102980");
 
 		allowListText = (EditText) findViewById(R.id.allowList);
-		allowListText.setText("Jint  Dingl Sheng");
+		allowListText.setText(" chengying  ");
 
 		feedbackText = (EditText) findViewById(R.id.feedback);
-		feedbackText.setText("Yes");
+		feedbackText.setText("１");
 
 		runLogText = (EditText) findViewById(R.id.runLog);
 		runLogText.setText("");
@@ -77,7 +78,7 @@ public class SecAidActivity extends Activity {
 				startButton.setEnabled(false);
 				stopButton.setEnabled(true);
 
-				//runLogText.append("Register Moniter SMS.");
+				// runLogText.append("Register Moniter SMS.");
 
 				// 注册sms监听
 
@@ -98,11 +99,14 @@ public class SecAidActivity extends Activity {
 				startButton.setEnabled(true);
 				stopButton.setEnabled(false);
 				runLogText.setText("");
-				runLogText.append("\n停止监听短信。");
-				// TODO 取消sms监听
-				if (smsReciver != null) {
+				// 取消sms监听
+				try {
 					unregisterReceiver(smsReciver);
+
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
 				}
+				runLogText.append("\n已经停止监听短信。");
 			}
 		});
 	}
@@ -113,6 +117,7 @@ public class SecAidActivity extends Activity {
 			Bundle bundle = intent.getExtras();
 			SmsMessage[] msgs = null;
 			String msgFromNo = null;
+			StringBuffer msgStrBuf = new StringBuffer();
 			String msgBody = null;
 
 			// runLogText.append("Start onReceive." );
@@ -124,33 +129,33 @@ public class SecAidActivity extends Activity {
 				for (int i = 0; i < msgs.length; i++) {
 					msgs[i] = SmsMessage.createFromPdu((byte[]) pdus[i]);
 					msgFromNo = msgs[i].getOriginatingAddress();
-					msgBody = msgs[i].getMessageBody().toString();
-
-					runLogText.append("\n收到短信: " + msgBody);
+					msgStrBuf.append(msgs[i].getMessageBody());
 				}
 				// ---display the new SMS message---
 				// Toast.makeText(context, msgBody, Toast.LENGTH_SHORT).show();
 			}
+			msgBody = msgStrBuf.toString();
+			runLogText.append("\n----------------\n收到短信: " + msgBody);
 
 			String caredNo = fromNoText.getText().toString();
 
-			runLogText.append("\n短信发送方号码: " + msgFromNo );
-			//runLogText.append("\n监控号码: " + caredNo );
+			runLogText.append("\n短信发送方号码: " + msgFromNo);
+			// runLogText.append("\n监控号码: " + caredNo );
 			boolean flag = false;
 			if (msgFromNo.indexOf(caredNo) == 0) {
 				// 确实是关注的号码发过来的短信，则开始检查短信内容。
 				runLogText.append("\n发送方号码符合设定，检查短信内容。");
 				for (int i = 0; i < allowListArray.length; i++) {
-					if (msgBody.indexOf(allowListArray[i]) > 0) {
+					if (msgBody.indexOf(allowListArray[i].trim()) > 0) {
 						flag = true;
 						break;
-					} 
+					}
 				}
-				if(flag) {
+				if (flag) {
 					runLogText.append("\n短信内容符合设定，自动回复短信。");
 					String strRunLog = sendMsg(msgFromNo, feedback);
-					runLogText.append(strRunLog);
-				}else{
+					runLogText.append("\n" + strRunLog);
+				} else {
 					runLogText.append("\n短信内容不匹配，忽略。");
 				}
 			} else {
@@ -162,11 +167,20 @@ public class SecAidActivity extends Activity {
 
 	@Override
 	public void onStop() {
-
-		if (smsReciver != null) {
-			unregisterReceiver(smsReciver);
-		}
+		//runLogText.append("\n onStop()");
 		super.onStop();
+	}
+
+	@Override
+	public void onDestroy() {
+		//runLogText.append("\n onDestroy()");
+		try {
+			unregisterReceiver(smsReciver);
+
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		}
+		super.onDestroy();
 	}
 
 	@Override

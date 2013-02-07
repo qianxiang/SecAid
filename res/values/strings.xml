@@ -1,0 +1,14 @@
+<resources>
+
+    <string name="app_name">SecAid</string>
+    <string name="from_no"> 来电号码</string>
+    <string name="allow_list">信任列表</string>
+    <string name="feedback_text">回复内容</string>
+    <string name="start">开始值班</string>
+    <string name="stop">停止值班</string>
+    
+    <string name="work_log">运行日志</string>
+    <string name="menu_settings">Settings</string>
+    <string name="title_activity_sec_aid">SecAid</string>
+
+</resources>
